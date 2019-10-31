@@ -2,6 +2,7 @@ pragma solidity >=0.4.21 <0.6.0;
 
 import "./nf-token-metadata.sol";
 import "./ownable.sol";
+import "./Fynya_Token.sol";
 
 
 contract Asset is
@@ -20,7 +21,9 @@ contract Asset is
     }
    
     Item[] public Items;
- 
+    uint token_balance; 
+    Fynya_Token _token = Fynya_Token(address(0x08970FEd061E7747CD9a38d680A601510CB659FB));
+    
   constructor()
     public
   {
@@ -36,7 +39,22 @@ contract Asset is
     super._setTokenUri(_tokenId, "");
     return(_tokenId);
   }
- 
+  
+  function fynyaTokenBalance(address _enquire) public view returns (uint balance) {
+      return(_token.fynyatokenbalance(_enquire));
+    }
+    
+  function fynyaTokenApprove(address _to, uint _value) public payable returns (bool success) {
+      return _token.approve(_to, _value);
+  } 
+  
+  function fynyaTokenTransfer(address _to, uint _value) public payable returns (bool success) {
+      return _token.transfer(_to, _value);
+  } 
+  
+  function findSender() public view returns (address sender) {
+      return _token.getMsgSender();
+  }
  
   function assay(uint _tokenId,uint _cert_qty,uint _std,uint _expry) external onlyOwner  returns(uint) {
      
