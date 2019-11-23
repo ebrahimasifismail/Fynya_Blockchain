@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const solc = require('solc');
-const path_to = '/home/techversant/NFT/Fynya_Blockchain/contracts'
+const path_to = '/home/ismail/Fynya_Blockchain/Fynya_Blockchain/contracts'
 
 var inputs = {
     language: 'Solidity',

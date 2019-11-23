@@ -10,69 +10,168 @@ contract Asset is
   Ownable
 {
 
-  struct Item{
-      string name;
-      uint qty;
-      uint std;
-      uint cert_qty;
-      uint expry;
-      uint insurance;
-      uint custom_clearance;
-    }
+  struct Certificate {
+      uint certificate_id;
+      string consignment_name;
+      string consignment_quantity;
+      string consignment_standard;
+      address consignment_owner;
+      address warehousePublicAddress;
+      bool isAssayed;
+      bool isInsured;
+      bool isCustomsCleared;
+      bool ShippingCleared;
+}
+
+  mapping(uint => bool) isAssayed;
+  mapping(uint => bool) isInsured;
+  mapping(uint => bool) isCustomsCleared;
+  mapping(uint => bool) isShippingCleared;
+ 
+  uint[] CertificatesAssayedList;
+  uint[] CertificatesInsuredList;
+  uint[] CertificatesCutsomsClearedList;
+  uint[] CertificatesShippedList;
+ 
+  mapping(address => bool) isAssayingAuthority;
+  mapping(address => bool) isInsuringAuthority;
+  mapping(address => bool) isCustomsAuthority;
+  mapping(address => bool) isShippingAuthority;
+  mapping(address => bool) isWarehouse;
+ 
+  address[] AssayerList;
+  address[] InsurerList;
+  address[] CustomsList;
+  address[] ShipperList;
+  address[] WarehouseList;
    
-    Item[] public Items;
-    uint token_balance; 
-    Fynya_Token _token = Fynya_Token(address(0x08970FEd061E7747CD9a38d680A601510CB659FB));
-    
+  Certificate[] public Certificates;
+  uint token_balance;
+  Fynya_Token _token = Fynya_Token(address(0x8E1a0d15F95f6d082949F876BE8E1dfc975C8E4e));
+   
   constructor()
     public
   {
     nftName = "Fynya Token";
     nftSymbol = "FYN";
   }
-
  
-  function mint(address _to,string calldata name, uint qty ) external  onlyOwner returns(uint) {
-    uint _tokenId=Items.length;
-    Items.push(Item(name, qty, 0, 0,0, 0, 0 ));
-    super._mint(_to, _tokenId);
-    super._setTokenUri(_tokenId, "");
-    return(_tokenId);
+  function addAssayer(address _newAssayer) public onlyOwner returns (bool) {
+    AssayerList.push(_newAssayer);
+    isAssayingAuthority[_newAssayer] = true;
+    return true;
   }
-  
+ 
+  function addInsurer(address _newInsurer) public onlyOwner returns (bool) {
+      InsurerList.push(_newInsurer);
+      isInsuringAuthority[_newInsurer] = true;
+      return true;
+  }
+ 
+  function addCustoms (address _newCustoms) public onlyOwner returns (bool) {
+      CustomsList.push(_newCustoms);
+      isInsuringAuthority[_newCustoms] = true;
+      return true;
+  }
+ 
+  function addShipper(address _newShipper) public onlyOwner returns (bool) {
+      ShipperList.push(_newShipper);
+      isShippingAuthority[_newShipper] = true;
+      return true;
+  }
+ 
+  function addWarehouse(address _warehouse) public onlyOwner returns (bool) {
+      WarehouseList.push(_warehouse);
+      isWarehouse[_warehouse] = true;
+      return true;
+  }
+ 
+//   function mint(address _to ) external  onlyOwner returns(uint) {
+//     uint _tokenId=Certificates.length;
+//     super._mint(_to, _tokenId);
+//     super._setTokenUri(_tokenId, "");
+//     return(_tokenId);
+//   }
+ 
   function fynyaTokenBalance(address _enquire) public view returns (uint balance) {
       return(_token.fynyatokenbalance(_enquire));
     }
-    
+   
   function fynyaTokenApprove(address _to, uint _value) public payable returns (bool success) {
       return _token.approve(_to, _value);
-  } 
-  
+  }
+ 
   function fynyaTokenTransfer(address _to, uint _value) public payable returns (bool success) {
       return _token.transfer(_to, _value);
-  } 
-  
+  }
+ 
   function findSender() public view returns (address sender) {
       return _token.getMsgSender();
   }
  
-  function assay(uint _tokenId,uint _cert_qty,uint _std,uint _expry) external onlyOwner  returns(uint) {
-     
-      Items[_tokenId].cert_qty=_cert_qty;
-      Items[_tokenId].std=_std;
-      Items[_tokenId].expry=_expry;
+  function toAssay(
+      string calldata _consignment_name,
+      string calldata _consignment_quantity,
+      string calldata _consignment_standard,
+      address _consignment_owner,
+      address _warehousePublicAddress
+      ) external OnlyAssayer  returns(uint) {
+        Certificate memory newCertificate = Certificate({
+           certificate_id: Certificates.length,
+           consignment_quantity: _consignment_quantity,
+           consignment_standard: _consignment_standard,
+           consignment_owner: _consignment_owner,
+           warehousePublicAddress: _warehousePublicAddress,
+           consignment_name: _consignment_name,
+           isAssayed: false,
+           isInsured: false,
+           isCustomsCleared: false,
+           ShippingCleared: false
+        });
+        super._mint(_consignment_owner, Certificates.length);
+        super._setTokenUri(Certificates.length, "");
+        newCertificate.isAssayed = true;
+        Certificates.push(newCertificate);
+        CertificatesAssayedList.push(Certificates.length);
+        return(Certificates.length);
+  }
+ 
+  function toInsure(uint _tokenId) external OnlyInsurer  returns(uint) {
+      Certificates[_tokenId].isInsured = true;
+      CertificatesInsuredList.push(_tokenId);
       return(_tokenId);
   }
  
-  function insure(uint _tokenId,uint _insurance_id) external onlyOwner  returns(uint) {
-     
-      Items[_tokenId].insurance=_insurance_id;
+  function toCustoms(uint _tokenId) external OnlyCustoms  returns(uint) {
+      Certificates[_tokenId].isCustomsCleared = true;
+      CertificatesCutsomsClearedList.push(_tokenId);
       return(_tokenId);
   }
-  function customs(uint _tokenId,uint _customs_id) external onlyOwner  returns(uint) {
-     
-      Items[_tokenId].custom_clearance=_customs_id;
+ 
+  function toShipping(uint _tokenId) external OnlyShipper returns(uint) {
+      Certificates[_tokenId].ShippingCleared = true;
+      CertificatesShippedList.push(_tokenId);
       return(_tokenId);
   }
-
+ 
+ 
+  modifier OnlyAssayer {
+    require(isAssayingAuthority[msg.sender] == true);
+    _;
+  }
+ 
+  modifier OnlyInsurer {
+    require(isInsuringAuthority[msg.sender] == true);
+    _;
+  }
+   
+  modifier OnlyCustoms {
+    require(isCustomsAuthority[msg.sender] == true);
+    _;
+  }
+ 
+  modifier OnlyShipper {
+      require(isShippingAuthority[msg.sender] == true);
+      _;
+  }
 }

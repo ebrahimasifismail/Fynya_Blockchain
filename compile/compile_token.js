@@ -7,7 +7,7 @@ var inputs = {
     language: 'Solidity',
     sources: {
         'Fynya_Token.sol' : {
-            content: fs.readFileSync('/home/techversant/NFT/Fynya_Blockchain/contracts/Fynya_Token.sol', 'utf8')
+            content: fs.readFileSync('/home/techversant/Fynya_Blockchain/Fynya_Blockchain/contracts/Fynya_Token.sol', 'utf8')
         },
     },
     settings: {
