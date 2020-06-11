@@ -133,7 +133,7 @@ contract Asset is
         newCertificate.isAssayed = true;
         Certificates.push(newCertificate);
         CertificatesAssayedList.push(Certificates.length);
-        return(Certificates.length);
+        return(Certificates.length - 1);
   }
  
   function toInsure(uint _tokenId) external OnlyInsurer  returns(uint) {
