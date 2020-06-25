@@ -19,6 +19,13 @@ contract Fynya_Token {
         uint256 _token
     );
     
+    event TransferFuture(
+        address indexed _from,
+        address indexed _to,
+        uint256 _value,
+        uint256 token_code
+    );
+    
     event Approval(
         address indexed _owner,
         address indexed _spender,
@@ -59,6 +66,15 @@ contract Fynya_Token {
         return true;
     }
     
+    function transfer_future(address _to, uint256 _value, uint256 token_code) public returns (bool success) {
+        require(balanceOf[msg.sender] >= _value);
+
+        balanceOf[msg.sender] -= _value;
+        balanceOf[_to] += _value;
+
+        emit TransferFuture(msg.sender, _to, _value, token_code);
+        return true;
+    }
 
     function approve(address _spender, uint256 _value) public returns (bool success) {
         allowance[msg.sender][_spender] = _value;
