@@ -15,6 +15,7 @@ contract Asset is
       string consignment_name;
       string consignment_quantity;
       string consignment_standard;
+      string assay_transaction_id;
       address consignment_owner;
       address warehousePublicAddress;
       bool isAssayed;
@@ -47,7 +48,7 @@ contract Asset is
    
   Certificate[] public Certificates;
   uint token_balance;
-  Fynya_Token _token = Fynya_Token(address(0x8E1a0d15F95f6d082949F876BE8E1dfc975C8E4e));
+  Fynya_Token _token = Fynya_Token(address(0x94A008C18020905a1E2c4fa81136528694a9834D));
    
   constructor()
     public
@@ -113,6 +114,7 @@ contract Asset is
       string calldata _consignment_name,
       string calldata _consignment_quantity,
       string calldata _consignment_standard,
+      string calldata _assay_transaction_id,
       address _consignment_owner,
       address _warehousePublicAddress
       ) external OnlyAssayer  returns(uint) {
@@ -121,6 +123,7 @@ contract Asset is
            consignment_quantity: _consignment_quantity,
            consignment_standard: _consignment_standard,
            consignment_owner: _consignment_owner,
+           assay_transaction_id: _assay_transaction_id,
            warehousePublicAddress: _warehousePublicAddress,
            consignment_name: _consignment_name,
            isAssayed: false,
