@@ -15,32 +15,39 @@ contract Asset is
       string consignment_name;
       string consignment_quantity;
       string consignment_standard;
-      string assay_transaction_id;
+      int assay_transaction_id;
+      int LCApproval_transaction_id;
+      int insurance_transaction_id;
+      int customs_transaction_id;
+      int shipping_transaction_id;
+      int paymentApprovedTransaction_id;
       address consignment_owner;
       address warehousePublicAddress;
-      bool isAssayed;
-      bool isInsured;
-      bool isCustomsCleared;
-      bool ShippingCleared;
 }
 
   mapping(uint => bool) isAssayed;
+  mapping(uint => bool) isLCApproved;
   mapping(uint => bool) isInsured;
   mapping(uint => bool) isCustomsCleared;
   mapping(uint => bool) isShippingCleared;
+  mapping(uint => bool) isPaymentApproved;
  
   uint[] CertificatesAssayedList;
+  uint[] CertificatesLCApprovedList;
   uint[] CertificatesInsuredList;
   uint[] CertificatesCutsomsClearedList;
   uint[] CertificatesShippedList;
+  uint[] CertificatesPaymentApprovedList;
  
   mapping(address => bool) isAssayingAuthority;
   mapping(address => bool) isInsuringAuthority;
+  mapping(address => bool) isBank;
   mapping(address => bool) isCustomsAuthority;
   mapping(address => bool) isShippingAuthority;
   mapping(address => bool) isWarehouse;
  
   address[] AssayerList;
+  address[] BankList;
   address[] InsurerList;
   address[] CustomsList;
   address[] ShipperList;
@@ -60,6 +67,12 @@ contract Asset is
   function addAssayer(address _newAssayer) public onlyOwner returns (bool) {
     AssayerList.push(_newAssayer);
     isAssayingAuthority[_newAssayer] = true;
+    return true;
+  }
+  
+  function addBank(address _newBank) public onlyOwner returns (bool) {
+    BankList.push(_newBank);
+    isBank[_newBank] = true;
     return true;
   }
  
@@ -86,6 +99,8 @@ contract Asset is
       isWarehouse[_warehouse] = true;
       return true;
   }
+  
+  
  
 //   function mint(address _to ) external  onlyOwner returns(uint) {
 //     uint _tokenId=Certificates.length;
@@ -114,7 +129,7 @@ contract Asset is
       string calldata _consignment_name,
       string calldata _consignment_quantity,
       string calldata _consignment_standard,
-      string calldata _assay_transaction_id,
+      int _assay_transaction_id,
       address _consignment_owner,
       address _warehousePublicAddress
       ) external OnlyAssayer  returns(uint) {
@@ -124,36 +139,54 @@ contract Asset is
            consignment_standard: _consignment_standard,
            consignment_owner: _consignment_owner,
            assay_transaction_id: _assay_transaction_id,
+           LCApproval_transaction_id: -1,
+           insurance_transaction_id: -1,
+           customs_transaction_id: -1,
+           shipping_transaction_id: -1,
+           paymentApprovedTransaction_id: -1,
            warehousePublicAddress: _warehousePublicAddress,
-           consignment_name: _consignment_name,
-           isAssayed: false,
-           isInsured: false,
-           isCustomsCleared: false,
-           ShippingCleared: false
+           consignment_name: _consignment_name
         });
         super._mint(_consignment_owner, Certificates.length);
         super._setTokenUri(Certificates.length, "");
-        newCertificate.isAssayed = true;
         Certificates.push(newCertificate);
-        CertificatesAssayedList.push(Certificates.length);
+        isAssayed[Certificates.length - 1] = true;
+        CertificatesAssayedList.push(Certificates.length - 1);
         return(Certificates.length - 1);
   }
  
-  function toInsure(uint _tokenId) external OnlyInsurer  returns(uint) {
-      Certificates[_tokenId].isInsured = true;
+  function toInsure(uint _tokenId, int _insurance_transaction_id) external OnlyInsurer  returns(uint) {
+      isInsured[_tokenId] = true;
+      Certificates[_tokenId].insurance_transaction_id = _insurance_transaction_id;
       CertificatesInsuredList.push(_tokenId);
       return(_tokenId);
   }
+  
+  function LCApprove(uint _tokenId, int _lc_approve_transaction_id) external OnlyBank  returns(uint) {
+      isLCApproved[_tokenId] = true;
+      Certificates[_tokenId].LCApproval_transaction_id = _lc_approve_transaction_id;
+      CertificatesLCApprovedList.push(_tokenId);
+      return(_tokenId);
+  }
  
-  function toCustoms(uint _tokenId) external OnlyCustoms  returns(uint) {
-      Certificates[_tokenId].isCustomsCleared = true;
+  function toCustoms(uint _tokenId, int _customs_transaction_id) external OnlyCustoms  returns(uint) {
+      isCustomsCleared[_tokenId] = true;
+      Certificates[_tokenId].customs_transaction_id = _customs_transaction_id;
       CertificatesCutsomsClearedList.push(_tokenId);
       return(_tokenId);
   }
  
-  function toShipping(uint _tokenId) external OnlyShipper returns(uint) {
-      Certificates[_tokenId].ShippingCleared = true;
+  function toShipping(uint _tokenId, int _shipping_transaction_id) external OnlyShipper returns(uint) {
+      isShippingCleared[_tokenId] = true;
+      Certificates[_tokenId].shipping_transaction_id = _shipping_transaction_id;
       CertificatesShippedList.push(_tokenId);
+      return(_tokenId);
+  }
+  
+  function PaymentApprove(uint _tokenId, int _payment_approve_transaction_id) external OnlyBank  returns(uint) {
+      isPaymentApproved[_tokenId] = true;
+      Certificates[_tokenId].paymentApprovedTransaction_id = _payment_approve_transaction_id;
+      CertificatesPaymentApprovedList.push(_tokenId);
       return(_tokenId);
   }
  
@@ -175,6 +208,11 @@ contract Asset is
  
   modifier OnlyShipper {
       require(isShippingAuthority[msg.sender] == true);
+      _;
+  }
+  
+  modifier OnlyBank {
+      require(isBank[msg.sender] == true);
       _;
   }
 }
